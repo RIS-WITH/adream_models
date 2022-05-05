@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>adream_models</name>
+  <version>0.0.0</version>
+  <description>The adream_models package</description>
+
+  <maintainer email="gsarthou@laas.fr">Guillaume Sarthou</maintainer>
+
+  <license>BSD</license>
+
+  <author email="gsarthou@laas.fr">Guillaume Sarthou</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
