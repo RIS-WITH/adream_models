@@ -6,6 +6,7 @@ import copy
 #delta = 0.1 # marge pour prendre en compte les objets 
 mesh_root_path = "/home/nclerc/Documents/"
 root = bpy.data.scenes["Adream"].collection
+root_visible=bpy.context.view_layer.layer_collection
  #### script
 dict_collections = {}
 dict_objects = {}
@@ -42,52 +43,54 @@ def initTree(list_obj):
             obj.select_set(False)
             print(obj.name)#export object
             print(mesh_root_path+"OBJ/")#lieu
-    tree(root.children,"/",list_obj)
+    tree(root.children,"/",list_obj,root_visible.children)
     createYamlList(list_obj)
 
-def tree(children,collection_path,list_obj):
+def tree(children,collection_path,list_obj,visible):
     for child in children:
         local_collection_path = collection_path + child.name + "/"
         for extension in extensions_types:
             if not os.path.exists(mesh_root_path + extension + local_collection_path):
                 os.makedirs(mesh_root_path + extension + local_collection_path)
         if child.name == "furnitures":
-            treeFurnitures(child.children,local_collection_path,list_obj)
+            treeFurnitures(child.children,local_collection_path,list_obj,visible[child.name].children)
         else:
-            for obj in child.objects:
-                if obj not in list_obj:
-                    list_obj.append(obj)
-                    obj.select_set(True)
-                    for obj_child in obj.children:
-                        list_obj.append(obj_child)
-                        obj_child.select_set(True)
-                    bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+local_collection_path+obj.name+".stl",check_existing=False, use_selection=True)
-                    bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ"+local_collection_path+obj.name+".obj",check_existing=False, use_selection=True,path_mode='MATCH')
-                    bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX"+local_collection_path+obj.name+".fbx",check_existing=False,use_selection=True,path_mode='MATCH',bake_anim=False)
-                    for obj_child in obj.children:
-                        obj_child.select_set(False)
-                    obj.select_set(False)
-                    print(obj.name)#export obj bpy.ops.export_mesh.stl()
-                    print(mesh_root_path + extension + local_collection_path)#lieu
-            tree(child.children,local_collection_path,list_obj)
+            if visible[child.name].is_visible:
+                for obj in child.objects:
+                    if obj not in list_obj:
+                        list_obj.append(obj)
+                        obj.select_set(True)
+                        for obj_child in obj.children:
+                            list_obj.append(obj_child)
+                            obj_child.select_set(True)
+                        bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+local_collection_path+obj.name+".stl",check_existing=False, use_selection=True)
+                        bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ"+local_collection_path+obj.name+".obj",check_existing=False, use_selection=True,path_mode='MATCH')
+                        bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX"+local_collection_path+obj.name+".fbx",check_existing=False,use_selection=True,path_mode='MATCH',bake_anim=False)
+                        for obj_child in obj.children:
+                            obj_child.select_set(False)
+                        obj.select_set(False)
+                        print(obj.name)#export obj bpy.ops.export_mesh.stl()
+                        print(mesh_root_path + extension + local_collection_path)#lieu
+            tree(child.children,local_collection_path,list_obj,visible[child.name].children)
 
-def treeFurnitures(children,collection_path,list_obj):
+def treeFurnitures(children,collection_path,list_obj,visible):
     for child in children:
         local_collection_path = collection_path + child.name + "/"
         for extension in extensions_types:
             if not os.path.exists(mesh_root_path + extension + local_collection_path):
                 os.makedirs(mesh_root_path + extension + local_collection_path)
-        for obj in child.objects:
-            if not "." in obj.name:
-                list_obj.append(obj)
-                obj.select_set(True)
-                bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+collection_path+obj.name+".stl",check_existing=False, use_selection=True)
-                bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ/"+collection_path+obj.name+".obj",check_existing=False, use_selection=True)
-                bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX/"+collection_path+obj.name+".fbx",check_existing=False,use_selection=True)
-                obj.select_set(False)
-                print(obj.name)#export 
-                print(mesh_root_path + extension + collection_path)#lieu     
-        treeFurnitures(child.children,local_collection_path,list_obj)
+        if visible[child.name].is_visible:
+            for obj in child.objects:
+                if not "." in obj.name:
+                    list_obj.append(obj)
+                    obj.select_set(True)
+                    bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+collection_path+obj.name+".stl",check_existing=False, use_selection=True)
+                    bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ/"+collection_path+obj.name+".obj",check_existing=False, use_selection=True)
+                    bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX/"+collection_path+obj.name+".fbx",check_existing=False,use_selection=True)
+                    obj.select_set(False)
+                    print(obj.name)#export 
+                    print(mesh_root_path + extension + collection_path)#lieu     
+        treeFurnitures(child.children,local_collection_path,list_obj,visible[child.name].children)
 
 if __name__=="__main__":
     for ob in bpy.context.selected_objects:
