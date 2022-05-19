@@ -1,18 +1,21 @@
 import bpy
 import yaml
 import os
+import copy
 #### Argument 
 
 
 obj = bpy.context.object
-delta = 0.1 # marge pour prendre en compte les objets 
+#delta = 0.1 # marge pour prendre en compte les objets 
 
-path = "/home/nclerc/Documents/"
+mesh_root_path = "/home/nclerc/Documents/"
 root = bpy.data.scenes["Adream"].collection
  #### script
 
 dict_collections = {}
 dict_objects = {}
+
+extensions_types = {"OBJ", "STL", "FBX"}
 
 
 
@@ -57,10 +60,10 @@ dict_objects = {}
    #         extracted_objects.append(obj)
     #return extracted_objects
 
-def createYamlList(liste_obj,path2):
+def createYamlList(liste_obj):
     dict  =  {}
     for obj in liste_obj:
-        c = {'x' : obj.location.x, 'y' : obj.location.y , 'z' : obj.location.z , 'rotation' : obj.rotation_euler.z }
+        c = {'x' : obj.location.x, 'y' : obj.location.y , 'z' : obj.location.z ,'rx' : obj.rotation_euler.x,'ry' : obj.rotation_euler.y, 'rz' : obj.rotation_euler.z}
         name = obj.name
         name = name.replace('.',"_")
         print(type(name))
@@ -70,140 +73,70 @@ def createYamlList(liste_obj,path2):
 #    print(json_string)
 #    print(yaml.dump(dict))
     yaml_string = yaml.dump(dict)
-    with open(path2+"export1.yaml",'w') as outfile :
+    with open(mesh_root_path+"export1.yaml",'w') as outfile :
         outfile.write(yaml_string)
 
-def treeFBX(list_c,path2,ext):
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        if c.name == "furnitures":
-            treeFurnituresFBX(c.children,path2+c.name+"/",ext)
-        else:
-            for o in c.objects:
-                
-                o.select_set(True)
-                o.select_set(False)
-                print(o.name)#export l'obj bpy.ops.export_mesh.stl()
-                print(path2+c.name)#lieu
-            treeSTL(c.children,path2+c.name+"/",ext)
-        
-def initTreeFBX(list_c,path2,listO):
-    if not os.path.exists(path2+"FBX/"):
-        os.makedirs(path2+"FBX/")
-    for o in root.objects:
-            o.select_set(True)
-            o.select_set(False)
-            print(o.name)#export l'object bpy.ops.export_scene.fbx()
-            print(path2+"FBX/")#lieu
-    treeFBX(list_c,path2+"FBX/","fbx")
+def initTree(list_obj):
+    for extension in extensions_types:
+        if not os.path.exists(mesh_root_path + extension + "/"):
+            os.makedirs(mesh_root_path + extension + "/")        
+    for obj in root.objects:
+            list_obj.append(obj)
+            obj.select_set(True)
+            obj.select_set(False)
+            print(obj.name)#export object
+            print(mesh_root_path+"OBJ/")#lieu
+    tree(root.children,"/",list_obj)
+    createYamlList(list_obj)
 
-def treeSTL(list_c,path2,ext):
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        if c.name == "furnitures":
-            treeFurnituresSTL(c.children,path2+c.name+"/",ext)
-        else:
-            for o in c.objects:
-                
-                o.select_set(True)
-                o.select_set(False)
-                print(o.name)#export l'obj bpy.ops.export_mesh.stl()
-                print(path2+c.name)#lieu
-            treeSTL(c.children,path2+c.name+"/",ext)
-            
-            
-def treeFurnituresSTL(list_c,path2,ext):
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        for o in c.objects:
-            if not "." in o.name:
-                print(o.name)#export 
-                print(path2)#lieu       
-        # if len(c.objects) != 0:   
-        if (len(c.objects)!=0):
-            createYamlList(c.objects,path2+c.name+"/")
-        treeFurnituresSTL(c.children,path2+c.name+"/",ext)
-            
-def treeFurnituresOBJ(list_c,path2,ext):
-    i=0
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        for o in c.objects:
-            i=1
-            if not "." in o.name:
-                print(o.name)#export 
-                print(path2)#lieu       
-        if (len(c.objects)!=0):
-             createYamlList(c.objects,path2+c.name+"/")
-        treeFurnituresOBJ(c.children,path2+c.name+"/",ext)
-            
-def treeFurnituresFBX(list_c,path2,ext):
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        for o in c.objects:
-            if not "." in o.name:
-                print(o.name)#export 
-                print(path2)#lieu    
-        #if len(c.objects) != 0:   
-        if (len(c.objects)!=0):
-            createYamlList(c.objects,path2+c.name+"/")
-        treeFurnituresFBX(c.children,path2+c.name+"/",ext)
-            
-                
-        
-def initTreeSTL(list_c,path2,listO):
-    if not os.path.exists(path2+"STL/"):
-        os.makedirs(path2+"STL/")
-    for o in root.objects:
-            o.select_set(True)
-            o.select_set(False)
-            print(o.name)#export l'object bpy.ops.export_mesh.stl()
-            print(path2+"STL/")#lieu
-    treeSTL(list_c,path2+"STL/","stl")
     
-def treeOBJ(list_c,path2,ext):
-    for c in list_c:
-        if not os.path.exists(path2+c.name):  
-            os.makedirs(path2+c.name)
-        if c.name == "furnitures":
-            treeFurnituresOBJ(c.children,path2+c.name+"/",ext)
+def tree(children,collection_path,list_obj):
+    for child in children:
+        local_collection_path = collection_path + child.name + "/"
+        for extension in extensions_types:
+            if not os.path.exists(mesh_root_path + extension + local_collection_path):
+                os.makedirs(mesh_root_path + extension + local_collection_path)
+        if child.name == "furnitures":
+            treeFurnitures(child.children,local_collection_path,list_obj)
         else:
-            for o in c.objects:
-                
-                o.select_set(True)
-                o.select_set(False)
-                print(o.name)#export l'obj bpy.ops.export_mesh.stl()
-                print(path2+c.name)#lieu
-            treeSTL(c.children,path2+c.name+"/",ext)
-        
-def initTreeOBJ(list_c,path2,listO):
-    if not os.path.exists(path2+"OBJ/"):
-        os.makedirs(path2+"OBJ/")
-    for o in root.objects:
-            o.select_set(True)
-            o.select_set(False)
-            print(o.name)#export l'object bpy.ops.export_scene.obj()
-            print(path2+"OBJ/")#lieu
-    treeOBJ(list_c,path2+"OBJ/","obj")
+            for obj in child.objects:
+                list_obj.append(obj)
+                obj.select_set(True)
+                obj.select_set(False)
+                print(obj.name)#export obj bpy.ops.export_mesh.stl()
+                print(mesh_root_path + extension + local_collection_path)#lieu
+            tree(child.children,local_collection_path,list_obj)
 
-
-
+def treeFurnitures(children,collection_path,list_obj):
+    for child in children:
+        local_collection_path = collection_path + child.name + "/"
+        for extension in extensions_types:
+            if not os.path.exists(mesh_root_path + extension + local_collection_path):
+                os.makedirs(mesh_root_path + extension + local_collection_path)
+        for obj in child.objects:
+            if not "." in obj.name:
+                list_obj.append(obj)
+                obj.select_set(True)
+                obj.select_set(False)
+                print(obj.name)#export 
+                print(mesh_root_path + extension + collection_path)#lieu    
+        #if len(c.objects) != 0:   
+        treeFurnitures(child.children,local_collection_path,list_obj)
 
 if __name__=="__main__":
     for collection in bpy.data.collections:
          print(collection.name)
     print(os.getcwd())
     obj = bpy.context.selected_objects
+    list_obj = []
     #createYamlList(obj)
     #initialisation
-    initTreeFBX(root.children,path,root.objects) 
-    initTreeSTL(root.children,path,root.objects)
-    initTreeOBJ(root.children,path,root.objects)
+    initTree(list_obj)
+    
+    
+#   """ initTreeFBX(root.children,path,root.objects) 
+ #   initTreeSTL(root.children,path,root.objects)
+  #  initTreeOBJ(root.children,path,root.objects)"""
     
     """for o in bpy.data.scenes["Scene"].collection.objects:
             print(o.name)#export l'object
@@ -239,7 +172,8 @@ if __name__=="__main__":
 
 
     
-
+#for ob in bpy.context.selected_objects:
+ #   ob.select = False
 
 #C1 = dictObjects["dt_cube_BBRG"]
 #C2 = dictObjects["IKEA_RUTBO"]
