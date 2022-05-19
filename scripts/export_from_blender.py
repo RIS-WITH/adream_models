@@ -3,62 +3,15 @@ import yaml
 import os
 import copy
 #### Argument 
-
-
-obj = bpy.context.object
 #delta = 0.1 # marge pour prendre en compte les objets 
-
 mesh_root_path = "/home/nclerc/Documents/"
 root = bpy.data.scenes["Adream"].collection
  #### script
-
 dict_collections = {}
 dict_objects = {}
+list_obj = []
 
 extensions_types = {"OBJ", "STL", "FBX"}
-
-
-
-
-
-
-
-#def overObjectRef(objectRef,object):
- #   centerObjectRef = objectRef.location
-  #  dimObjectRef = objectRef.dimensions
-   # xminObjectRef = centerObjectRef.x - dimObjectRef.x/2 - delta
-    #xmaxObjectRef = centerObjectRef.x + dimObjectRef.x/2 + delta
-#    yminObjectRef = centerObjectRef.y - dimObjectRef.y/2 - delta
- #   ymaxObjectRef = centerObjectRef.y + dimObjectRef.y/2 + delta
-  #  zminObjectRef = centerObjectRef.z + dimObjectRef.z/2 - delta
-   # zmaxObjectRef = centerObjectRef.z + dimObjectRef.z/2 + delta
-    
- #   centerObject = object.location
-  #  dimObject = object.dimensions
-   # xminObject = centerObject.x - dimObject.x/2 
-#    xmaxObject = centerObject.x + dimObject.x/2 
- #   yminObject = centerObject.y - dimObject.y/2 
-  #  ymaxObject = centerObject.y + dimObject.y/2 
-   # zminObject = centerObject.z + dimObject.z/2 
-    #zmaxObject = centerObject.z + dimObject.z/2 
-    
-#    if(xminObjectRef<xminObject and xmaxObject<xmaxObjectRef):
-        # print('x ok')
- #       if(yminObjectRef<yminObject and ymaxObject<ymaxObjectRef):
-            # print('y ok')
-  #          if(zminObject > zminObjectRef):
-                # print('z ok')
-   #             return True
-    
-    #return False
-
-
-
-#def extractObjectCollectionsOverRef(object_ref):
- #   extracted_objects = []
-  #  for object_ref in bpy.context.object:
-   #         extracted_objects.append(obj)
-    #return extracted_objects
 
 def createYamlList(liste_obj):
     dict  =  {}
@@ -83,13 +36,15 @@ def initTree(list_obj):
     for obj in root.objects:
             list_obj.append(obj)
             obj.select_set(True)
+            bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL/"+obj.name+".stl",check_existing=False, use_selection=True)
+            bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ/"+obj.name+".obj",check_existing=False, use_selection=True)
+            bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX/"+obj.name+".fbx",check_existing=False,use_selection=True)
             obj.select_set(False)
             print(obj.name)#export object
             print(mesh_root_path+"OBJ/")#lieu
     tree(root.children,"/",list_obj)
     createYamlList(list_obj)
 
-    
 def tree(children,collection_path,list_obj):
     for child in children:
         local_collection_path = collection_path + child.name + "/"
@@ -100,11 +55,20 @@ def tree(children,collection_path,list_obj):
             treeFurnitures(child.children,local_collection_path,list_obj)
         else:
             for obj in child.objects:
-                list_obj.append(obj)
-                obj.select_set(True)
-                obj.select_set(False)
-                print(obj.name)#export obj bpy.ops.export_mesh.stl()
-                print(mesh_root_path + extension + local_collection_path)#lieu
+                if obj not in list_obj:
+                    list_obj.append(obj)
+                    obj.select_set(True)
+                    for obj_child in obj.children:
+                        list_obj.append(obj_child)
+                        obj_child.select_set(True)
+                    bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+local_collection_path+obj.name+".stl",check_existing=False, use_selection=True)
+                    bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ"+local_collection_path+obj.name+".obj",check_existing=False, use_selection=True,path_mode='MATCH')
+                    bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX"+local_collection_path+obj.name+".fbx",check_existing=False,use_selection=True,path_mode='MATCH',bake_anim=False)
+                    for obj_child in obj.children:
+                        obj_child.select_set(False)
+                    obj.select_set(False)
+                    print(obj.name)#export obj bpy.ops.export_mesh.stl()
+                    print(mesh_root_path + extension + local_collection_path)#lieu
             tree(child.children,local_collection_path,list_obj)
 
 def treeFurnitures(children,collection_path,list_obj):
@@ -117,23 +81,28 @@ def treeFurnitures(children,collection_path,list_obj):
             if not "." in obj.name:
                 list_obj.append(obj)
                 obj.select_set(True)
+                bpy.ops.export_mesh.stl(filepath=mesh_root_path+"STL"+collection_path+obj.name+".stl",check_existing=False, use_selection=True)
+                bpy.ops.export_scene.obj(filepath=mesh_root_path+"OBJ/"+collection_path+obj.name+".obj",check_existing=False, use_selection=True)
+                bpy.ops.export_scene.fbx(filepath=mesh_root_path+"FBX/"+collection_path+obj.name+".fbx",check_existing=False,use_selection=True)
                 obj.select_set(False)
                 print(obj.name)#export 
-                print(mesh_root_path + extension + collection_path)#lieu    
-        #if len(c.objects) != 0:   
+                print(mesh_root_path + extension + collection_path)#lieu     
         treeFurnitures(child.children,local_collection_path,list_obj)
 
 if __name__=="__main__":
-    for collection in bpy.data.collections:
-         print(collection.name)
-    print(os.getcwd())
-    obj = bpy.context.selected_objects
-    list_obj = []
-    #createYamlList(obj)
-    #initialisation
+    for ob in bpy.context.selected_objects:
+        ob.select_set(False)
     initTree(list_obj)
     
     
+    
+    #for collection in bpy.data.collections:
+     #    print(collection.name)
+#    print(os.getcwd()) 
+    #obj = bpy.context.selected_objects
+    
+    #createYamlList(obj)
+    #initialisation
 #   """ initTreeFBX(root.children,path,root.objects) 
  #   initTreeSTL(root.children,path,root.objects)
   #  initTreeOBJ(root.children,path,root.objects)"""
@@ -180,3 +149,47 @@ if __name__=="__main__":
 #overObjectRef(refObject,C2)
 
 #objects_in_collection = bpy.data.collections["My_Collection"].object
+
+
+
+
+
+
+
+
+#def overObjectRef(objectRef,object):
+ #   centerObjectRef = objectRef.location
+  #  dimObjectRef = objectRef.dimensions
+   # xminObjectRef = centerObjectRef.x - dimObjectRef.x/2 - delta
+    #xmaxObjectRef = centerObjectRef.x + dimObjectRef.x/2 + delta
+#    yminObjectRef = centerObjectRef.y - dimObjectRef.y/2 - delta
+ #   ymaxObjectRef = centerObjectRef.y + dimObjectRef.y/2 + delta
+  #  zminObjectRef = centerObjectRef.z + dimObjectRef.z/2 - delta
+   # zmaxObjectRef = centerObjectRef.z + dimObjectRef.z/2 + delta
+    
+ #   centerObject = object.location
+  #  dimObject = object.dimensions
+   # xminObject = centerObject.x - dimObject.x/2 
+#    xmaxObject = centerObject.x + dimObject.x/2 
+ #   yminObject = centerObject.y - dimObject.y/2 
+  #  ymaxObject = centerObject.y + dimObject.y/2 
+   # zminObject = centerObject.z + dimObject.z/2 
+    #zmaxObject = centerObject.z + dimObject.z/2 
+    
+#    if(xminObjectRef<xminObject and xmaxObject<xmaxObjectRef):
+        # print('x ok')
+ #       if(yminObjectRef<yminObject and ymaxObject<ymaxObjectRef):
+            # print('y ok')
+  #          if(zminObject > zminObjectRef):
+                # print('z ok')
+   #             return True
+    
+    #return False
+
+
+
+#def extractObjectCollectionsOverRef(object_ref):
+ #   extracted_objects = []
+  #  for object_ref in bpy.context.object:
+   #         extracted_objects.append(obj)
+    #return extracted_objects
