@@ -1,69 +1,54 @@
 import os
 import unreal
-path = "/home/nclerc/Documents/FBX"
-end = '/Game/meshes'
-matirial='/Game/material'
+import yaml
 
-def importTree(path_fin):
-	list = os.listdir(path+path_fin)
-	for elements in list:
-		if not ".fbx" in elements:
-			if not unreal.EditorAssetLibrary.does_directory_exist(end+path_fin+elements):
-				unreal.EditorAssetLibrary.make_directory(end+path_fin+elements)
-			importTree(path_fin+elements+"/")
-		else:
-			importMyAssets(path+path_fin+elements,end+path_fin)
-
-def buildStaticMeshImportOptions():
-	options=unreal.FbxImportUI()
-	options.set_editor_property('import_mesh',True)
-	options.set_editor_property('import_textures',False)
-	options.set_editor_property('import_materials',True)
-	options.set_editor_property('import_as_skeletal',False)
-	options.static_mesh_import_data.set_editor_property('import_uniform_scale',1.0)	
-	options.static_mesh_import_data.set_editor_property('combine_meshes',True)
-	options.static_mesh_import_data.set_editor_property('generate_lightmap_u_vs',True)
-	options.static_mesh_import_data.set_editor_property('auto_generate_collision',False)
-	options.texture_import_data.set_editor_property('material_search_location',unreal.MaterialSearchLocation.ALL_ASSETS)
-	return options
-
-def buildImportTask(filename,destination_path,options=None):
-	task=unreal.AssetImportTask()
-	task.set_editor_property('automated',True)
-	task.set_editor_property('destination_name','')
-	task.set_editor_property('destination_path',destination_path)
-	task.set_editor_property('filename',filename)
-	task.set_editor_property('replace_existing',True)
-	task.set_editor_property('save',True)
-	options=buildStaticMeshImportOptions()
-	task.set_editor_property('options',options)
-	return task
-
-def executeImportTasks(tasks=[]):
-    unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks(tasks)
-    """imported_asset_paths = []
-                for task in tasks:
-                    for path in task.get_editor_property('imported_object_paths'):
-                        imported_asset_paths.append(path)
-                return imported_asset_paths"""
+path_base = "/home/nclerc/Documents/FBX"
+mesh = '/Game/adream/models/meshes'
+material='/Game/adream/models/material'
+path_level='/Game/adream/maps/'
 
 
-def importMyAssets(file_name_and_path,destination_path):
-	static_mesh_task = buildImportTask(file_name_and_path, destination_path)
-	executeImportTasks([static_mesh_task])
+"""
+print(os.getcwd())"""
 
 
-def materialsMouv():
-	unreal.EditorAssetLibrary.make_directory(matirial)
-	list_assets_path=unreal.EditorAssetLibrary.list_assets(end)
-	for asset_path in list_assets_path:
-		asset=unreal.EditorAssetLibrary.find_asset_data(asset_path)
-		if asset.asset_class=='Material':
-			unreal.EditorAssetLibrary.rename_asset(asset_path,matirial+"/"+str(asset.asset_name))
+
+
+"""import sys
+my_libs_path = os.getenv("ENV_VARIABLE_NAME")
+if "/home/nclerc/Documents/UE/ProjectAdream/Content/Python" is not None and "/home/nclerc/Documents/UE/ProjectAdream/Content/Python" not in sys.path:
+    sys.path.append("/home/nclerc/Documents/UE/ProjectAdream/Content/Python")
+
+"""
+
+
+
+def createWorld():
+	unreal.EditorLevelLibrary.new_level(path_level+"Adream")
+	unreal.EditorLevelLibrary.load_level(path_level+"Adream")
+	a=unreal.EditorLevelLibrary.get_editor_world()
+	b=unreal.EditorLevelUtils.get_levels(a)
+	for folder_path in unreal.EditorAssetLibrary.list_assets(mesh,False,True):
+		folder_name=str(folder_path).replace(mesh,'')
+		if str(b).find(path_level+folder_name.replace('/',''))!=-1:
+			unreal.EditorLevelLibrary.set_current_level_by_name(folder_name.replace('/',''))
+		else :
+			unreal.EditorLevelUtils.create_new_streaming_level(unreal.LevelStreamingDynamic, new_level_path=path_level+folder_name.replace('/',''))
+		unreal.EditorLevelLibrary.save_all_dirty_levels()
+		c=unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(mesh+"/appartement/IKEA_chair_PELLO.IKEA_chair_PELLO"),(0,0,0))
+		c.set_folder_path('test/oui/non/style')
+		#parcours le yaml, prend actorifie tous les objets qui ont folder_name.replace('/','') dans leur nom, les mets bonne coordone rotation (vector/rotator)
+		#set_folder_path('path yml'(modification possible pour les exceptions))
+
+		
 
 if __name__=="__main__":
-	if not unreal.EditorAssetLibrary.does_directory_exist(end):
-		unreal.EditorAssetLibrary.make_directory(end)
-	importTree('/')
-	materialsMouv()
-			
+
+	with open('/home/nclerc/Documents/export1.yaml', 'r') as file:
+		z=yaml.safe_load(file)
+
+	for x in [string for string in z if 'appartement' in string]:
+		print(z[x]['name'])
+	b="salut le monde"
+	print(b.replace("chat",'chien'))
+	#createWorld()
