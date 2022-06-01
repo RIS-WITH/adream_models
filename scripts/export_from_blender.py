@@ -37,7 +37,7 @@ def createNewObjectNode(obj , mesh=''):
             'rx' : 0 if mesh == '' else obj.rotation_euler.x,
             'ry' : 0 if mesh == '' else obj.rotation_euler.y,
             'rz' : 0 if mesh == '' else obj.rotation_euler.z,
-            'mesh' : obj.name if mesh == '' else mesh}
+            'mesh' : obj.name if mesh == '' else mesh.replace('.',"_")}
     name = obj.name
     name = name.replace('.',"_")
     return (node, name)
@@ -108,7 +108,7 @@ def exportObjectsInFurnitures(collection,collection_path,objects_dict,visible):
         for obj in collection.objects: 
             if not obj.parent :
                 if not "." in obj.name:
-                    exportOneObject(obj, mesh_root_path, collection_path)
+                    exportObjectsInCollection(obj, mesh_root_path, collection_path)
                 obj_node, obj_name = createNewObjectNode(obj, obj.name.split('.', 1)[0])  
                 objects_dict[obj_name] = obj_node
         for child in collection.children:

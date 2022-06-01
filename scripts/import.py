@@ -3,52 +3,54 @@ import unreal
 import yaml
 
 path_base = "/home/nclerc/Documents/FBX"
-mesh = '/Game/adream/models/meshes'
-material='/Game/adream/models/material'
-path_level='/Game/adream/maps/'
+path_mesh = '/Game/adream/models/meshes'
+path_level = '/Game/adream/maps/'
 
+def createWorld() :
+	unreal.EditorLevelLibrary.new_level(path_level + "Adream")
+	unreal.EditorLevelLibrary.load_level(path_level + "Adream")
+	world = unreal.EditorLevelLibrary.get_editor_world()
+	sub_level_of_world = unreal.EditorLevelUtils.get_levels(world)
+	createLevel(sub_level_of_world)
 
-"""
-print(os.getcwd())"""
-
-
-
-
-"""import sys
-my_libs_path = os.getenv("ENV_VARIABLE_NAME")
-if "/home/nclerc/Documents/UE/ProjectAdream/Content/Python" is not None and "/home/nclerc/Documents/UE/ProjectAdream/Content/Python" not in sys.path:
-    sys.path.append("/home/nclerc/Documents/UE/ProjectAdream/Content/Python")
-
-"""
-
-
-
-def createWorld():
-	unreal.EditorLevelLibrary.new_level(path_level+"Adream")
-	unreal.EditorLevelLibrary.load_level(path_level+"Adream")
-	a=unreal.EditorLevelLibrary.get_editor_world()
-	b=unreal.EditorLevelUtils.get_levels(a)
-	for folder_path in unreal.EditorAssetLibrary.list_assets(mesh,False,True):
-		folder_name=str(folder_path).replace(mesh,'')
-		if str(b).find(path_level+folder_name.replace('/',''))!=-1:
-			unreal.EditorLevelLibrary.set_current_level_by_name(folder_name.replace('/',''))
+def createLevel(sub_level_of_world) :	
+	with open('/home/nclerc/Documents/export1.yaml', 'r') as file :
+		yaml_file = yaml.safe_load(file)
+	for level_name in yaml_file :
+		if str(sub_level_of_world).find(path_level + level_name) != -1 :
+			unreal.EditorLevelLibrary.set_current_level_by_name(level_name)
 		else :
-			unreal.EditorLevelUtils.create_new_streaming_level(unreal.LevelStreamingDynamic, new_level_path=path_level+folder_name.replace('/',''))
+			unreal.EditorLevelUtils.create_new_streaming_level(unreal.LevelStreamingDynamic , new_level_path = path_level + level_name)
+		createActors(yaml_file[level_name] , '' , level_name , '')
 		unreal.EditorLevelLibrary.save_all_dirty_levels()
-		c=unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(mesh+"/appartement/IKEA_chair_PELLO.IKEA_chair_PELLO"),(0,0,0))
-		c.set_folder_path('test/oui/non/style')
-		#parcours le yaml, prend actorifie tous les objets qui ont folder_name.replace('/','') dans leur nom, les mets bonne coordone rotation (vector/rotator)
-		#set_folder_path('path yml'(modification possible pour les exceptions))
 
+def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
+	if 'mesh' in dic_actor :
+		if actual_dic == "appartement":
+			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] +'.'+dic_actor['mesh']) 
+			, (dic_actor['x'],dic_actor['y'],dic_actor['z']), (dic_actor['ry'],dic_actor['rz'],dic_actor['rx']))
+			actor.set_folder_path('/ground_floor/appartement/appartement_vide')
+			actor.set_actor_label(actual_dic)
+		else:
+			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] +'.'+dic_actor['mesh']) 
+			, (dic_actor['x']*100,dic_actor['y']*(-100),dic_actor['z']*100), (dic_actor['ry'],dic_actor['rz'],dic_actor['rx']))
+			actor.set_folder_path(path_actor_level)
+			actor.set_actor_label(actual_dic)	
 		
+			
+	else :
+		for sub_dic in dic_actor :
+			if actual_dic == 'appartement' :
+				createActors(dic_actor[sub_dic] , "/ground_floor/" + actual_dic + "/appartement_plein", sub_dic , path_to_mesh + "/" + actual_dic)
+			elif ('furnitures' in path_actor_level and ('ground_floor' in actual_dic)) :
+				createActors(dic_actor[sub_dic] , '/ground_floor' + path_actor_level , sub_dic , path_to_mesh)
+			elif ('furnitures' in path_actor_level and ('first_floor' in actual_dic)) :
+				createActors(dic_actor[sub_dic] , '/first_floor' + path_actor_level , sub_dic , path_to_mesh)
+			else :
+				createActors(dic_actor[sub_dic] , path_actor_level + "/" + actual_dic , sub_dic , path_to_mesh + "/" + actual_dic)
+
+
 
 if __name__=="__main__":
+	createWorld()
 
-	with open('/home/nclerc/Documents/export1.yaml', 'r') as file:
-		z=yaml.safe_load(file)
-
-	for x in [string for string in z if 'appartement' in string]:
-		print(z[x]['name'])
-	b="salut le monde"
-	print(b.replace("chat",'chien'))
-	#createWorld()
