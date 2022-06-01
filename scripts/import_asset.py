@@ -5,7 +5,7 @@ path_mesh = '/Game/adream/models/meshes'
 path_material='/Game/adream/models/material'
 path_level='/Game/adream/maps/'
 
-separate_asset_classes = {"Material","Texture2D","Texture3D"}
+separate_asset_classes = ["Material","Texture2D","Texture3D"]
 
 def importTree(fbx_path, path_end):
 	list = os.listdir(fbx_path + path_end)
@@ -13,7 +13,7 @@ def importTree(fbx_path, path_end):
 		if not ".fbx" in elements:
 			if not unreal.EditorAssetLibrary.does_directory_exist(path_mesh + path_end + elements):
 				unreal.EditorAssetLibrary.make_directory(path_mesh + path_end + elements)
-			importTree(path_end + elements + "/")
+			importTree(fbx_path, path_end + elements + "/")
 		else:
 			importMyAssets(fbx_path + path_end + elements,path_mesh + path_end)
 
@@ -61,8 +61,11 @@ def separateMaterialFromMesh():
 		if asset.asset_class in separate_asset_classes:
 			unreal.EditorAssetLibrary.rename_asset(asset_path,path_material + "/" + str(asset.asset_name))
 
-def importAssets(fbx_path, path):
+def importAssets(fbx_path):
 	if not unreal.EditorAssetLibrary.does_directory_exist(path_mesh):
 		unreal.EditorAssetLibrary.make_directory(path_mesh)
 	importTree(fbx_path, '/')
-	materialsMouv()
+	separateMaterialFromMesh()
+
+if __name__=="__main__":
+	importAssets("/home/nclerc/Documents/FBX")
