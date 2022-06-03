@@ -93,7 +93,7 @@ def exportFromOrigin(obj,mesh_root_path,collection_path):
     obj.rotation_euler.rx=0
     obj.rotation_euler.ry=0
     obj.rotation_euler.rz=0
-    exportOneObject(obj, mesh_root_path, collection_path)
+    #exportOneObject(obj, mesh_root_path, collection_path)
     obj.location.x=x
     obj.location.y=y
     obj.location.z=z
@@ -108,6 +108,8 @@ def exportObjectsInFurnitures(collection,collection_path,objects_dict,visible):
         for obj in collection.objects: 
             if not obj.parent :
                 if not "." in obj.name:
+                    print(obj)
+                    print('________________')
                     exportObjectsInCollection(obj, mesh_root_path, collection_path)
                 obj_node, obj_name = createNewObjectNode(obj, obj.name.split('.', 1)[0])  
                 objects_dict[obj_name] = obj_node
