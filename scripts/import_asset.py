@@ -24,11 +24,12 @@ def buildStaticMeshImportOptions():
 	options.set_editor_property('import_textures', False)
 	options.set_editor_property('import_materials', True)
 	options.set_editor_property('import_as_skeletal', False)
+	options.set_editor_property('create_physics_asset',True)
 
 	options.static_mesh_import_data.set_editor_property('import_uniform_scale', 1.0)	
 	options.static_mesh_import_data.set_editor_property('combine_meshes', True)
 	options.static_mesh_import_data.set_editor_property('generate_lightmap_u_vs', True)
-	options.static_mesh_import_data.set_editor_property('auto_generate_collision', False)
+	options.static_mesh_import_data.set_editor_property('auto_generate_collision', True)
 	options.texture_import_data.set_editor_property('material_search_location', unreal.MaterialSearchLocation.ALL_ASSETS)
 	return options
 
@@ -51,6 +52,16 @@ def executeImportTasks(tasks=[]):
 def importMyAssets(file_name_and_path,destination_path):
 	static_mesh_task = buildImportTask(file_name_and_path, destination_path)
 	executeImportTasks([static_mesh_task])
+	list_test=file_name_and_path.split('/')
+	size_of_list_test=len(list_test)
+	name=list_test[size_of_list_test-1].replace(".fbx","")
+	name_full=name.replace(".","_")+'.'+name.replace(".","_")
+	asset=unreal.EditorAssetLibrary.find_asset_data(destination_path+name_full)
+	if asset.asset_class=='StaticMesh':
+		mesh=asset.get_asset()
+		body = mesh.get_editor_property('body_setup')
+		body.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+		mesh.set_editor_property('body_setup', body)
 
 
 def separateMaterialFromMesh():
@@ -58,8 +69,18 @@ def separateMaterialFromMesh():
 	list_assets_path=unreal.EditorAssetLibrary.list_assets(path_mesh)
 	for asset_path in list_assets_path:
 		asset=unreal.EditorAssetLibrary.find_asset_data(asset_path)
+		print('_______________________________________________________________________________________________________________________________________________')
 		if asset.asset_class in separate_asset_classes:
-			unreal.EditorAssetLibrary.rename_asset(asset_path,path_material + "/" + str(asset.asset_name))
+			print(path_material + "/" + str(asset.asset_name))
+			print('_______________________________________________________________________________________________________________________________________________')
+			print(asset_path)
+			if unreal.EditorAssetLibrary.does_asset_exist(path_material + "/" + str(asset.asset_name)):
+				old_reference_texture=unreal.EditorAssetLibrary.find_asset_data(asset_path).get_asset()
+				new_reference_texture=unreal.EditorAssetLibrary.find_asset_data(path_material + "/" + str(asset.asset_name)).get_asset()
+				unreal.EditorAssetLibrary.consolidate_assets(new_reference_texture,[old_reference_texture])
+				unreal.EditorAssetLibrary.delete_asset(asset_path)
+			else:
+				unreal.EditorAssetLibrary.rename_asset(asset_path,path_material + "/" + str(asset.asset_name))
 
 def importAssets(fbx_path):
 	if not unreal.EditorAssetLibrary.does_directory_exist(path_mesh):
@@ -69,3 +90,5 @@ def importAssets(fbx_path):
 
 if __name__=="__main__":
 	importAssets("/home/nclerc/Documents/FBX")
+
+
