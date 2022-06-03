@@ -1,6 +1,7 @@
 import os
 import unreal
 import yaml
+import math
 
 path_base = "/home/nclerc/Documents/FBX"
 path_mesh = '/Game/adream/models/meshes'
@@ -12,11 +13,14 @@ def createWorld() :
 	unreal.EditorLevelLibrary.load_level(path_level + "Adream")
 	world = unreal.EditorLevelLibrary.get_editor_world()
 	sub_level_of_world = unreal.EditorLevelUtils.get_levels(world)
-	light=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.SkyLight,(0,0,1000),(0,0,0))
-	component=unreal.SkyLight()
+	skylight=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.SkyLight,(0,0,1000),(0,0,0))	
+	fog_light=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.AtmosphericFog,(0,0,1000),(0,0,0))
+	direct_light=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.DirectionalLight,(0,0,1000),(0,0,0))
 	hemishphere_color=unreal.LinearColor(1,1,1,1)	
-	light.light_component.set_editor_property('lower_hemisphere_color', hemishphere_color)
-	light.light_component.set_editor_property('intensity', 10)
+	fog_light.root_component.set_editor_property('sun_multiplier',2.5)
+	skylight.light_component.set_editor_property('lower_hemisphere_color', hemishphere_color)
+	skylight.light_component.set_editor_property('intensity', 10)
+	direct_light.light_component.set_editor_property('used_as_atmosphere_sun_light',True)
 	createLevel(sub_level_of_world)
 
 def createLevel(sub_level_of_world) :	
@@ -36,12 +40,12 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 	if 'mesh' in dic_actor :
 		if actual_dic == "appartement":
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] +'.'+dic_actor['mesh']) 
-			, (dic_actor['x'],dic_actor['y'],dic_actor['z']), (dic_actor['ry'],dic_actor['rz'],dic_actor['rx']))
+			, (dic_actor['x']*100,dic_actor['y']*(-100),dic_actor['z']*100),(dic_actor['ry']*(-180/math.pi) ,dic_actor['rz']*(-180/math.pi),dic_actor['rx']*(-180/math.pi) ))
 			actor.set_folder_path('/ground_floor/appartement/appartement_vide')
 			actor.set_actor_label(actual_dic)
 		else:
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] +'.'+dic_actor['mesh']) 
-			, (dic_actor['x']*100,dic_actor['y']*(-100),dic_actor['z']*100), (dic_actor['ry'],dic_actor['rz'],dic_actor['rx']))
+			, (dic_actor['x']*100,dic_actor['y']*(-100),dic_actor['z']*100),(dic_actor['ry']*(-180/math.pi) ,dic_actor['rz']*(-180/math.pi),dic_actor['rx']*(-180/math.pi) ))
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)	
 			if actual_dic== 'IKEAShelf_mesh_002':
@@ -63,4 +67,6 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 
 if __name__=="__main__":
 	createWorld()
+	print(math.pi)
+	print('_____________________________________________________________________________________')
 
