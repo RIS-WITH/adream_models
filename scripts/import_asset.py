@@ -24,6 +24,9 @@ def buildStaticMeshImportOptions():
 	options.set_editor_property('import_textures', False)
 	options.set_editor_property('import_materials', True)
 	options.set_editor_property('import_as_skeletal', False)
+	options.set_editor_property('import_animations', False)
+	options.set_editor_property('automated_import_should_detect_type', False)
+	
 	options.set_editor_property('create_physics_asset',True)
 
 	options.static_mesh_import_data.set_editor_property('import_uniform_scale', 1.0)	
@@ -64,16 +67,13 @@ def importMyAssets(file_name_and_path,destination_path):
 		mesh.set_editor_property('body_setup', body)
 
 
-def separateMaterialFromMesh():
+def separateMaterialFromMesh():	
 	unreal.EditorAssetLibrary.make_directory(path_material)
 	list_assets_path=unreal.EditorAssetLibrary.list_assets(path_mesh)
 	for asset_path in list_assets_path:
 		asset=unreal.EditorAssetLibrary.find_asset_data(asset_path)
-		print('_______________________________________________________________________________________________________________________________________________')
 		if asset.asset_class in separate_asset_classes:
 			print(path_material + "/" + str(asset.asset_name))
-			print('_______________________________________________________________________________________________________________________________________________')
-			print(asset_path)
 			if unreal.EditorAssetLibrary.does_asset_exist(path_material + "/" + str(asset.asset_name)):
 				old_reference_texture=unreal.EditorAssetLibrary.find_asset_data(asset_path).get_asset()
 				new_reference_texture=unreal.EditorAssetLibrary.find_asset_data(path_material + "/" + str(asset.asset_name)).get_asset()
