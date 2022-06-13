@@ -48,8 +48,7 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 			, (dic_actor['x']*100,dic_actor['y']*(-100),dic_actor['z']*100),(dic_actor['ry']*(-180/math.pi) ,dic_actor['rz']*(-180/math.pi),dic_actor['rx']*(-180/math.pi) ))
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)	
-			if actual_dic== 'IKEAShelf_mesh_002':
-				unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.PlayerStart,(520,-670,180),(0,0,0))
+			
 		
 			
 	else :
@@ -67,6 +66,4 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 
 if __name__=="__main__":
 	createWorld()
-	print(math.pi)
-	print('_____________________________________________________________________________________')
 
