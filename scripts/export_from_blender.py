@@ -30,6 +30,24 @@ def exportOneObject(obj, export_path_before, export_path_after):
         obj_child.select_set(False)
     print(obj.name)
     
+def exportOneObjectAnim(obj, export_path_before, export_path_after):
+    obj.select_set(True)
+    for obj_child in obj.children:
+        obj_child.select_set(True)
+    bpy.ops.object.duplicate()
+    bpy.ops.anim.keyframe_clear_v3d()
+    bpy.ops.export_mesh.stl(filepath=export_path_before+"STL"+export_path_after+obj.name+".stl", check_existing=False, 
+    use_selection=True,axis_forward='X',axis_up='Z')
+    bpy.ops.export_scene.obj(filepath=export_path_before+"OBJ"+export_path_after+obj.name+".obj", check_existing=False, 
+    use_selection=True,axis_forward='X',axis_up='Z')
+    bpy.ops.export_scene.fbx(filepath=export_path_before+"FBX"+export_path_after+obj.name+".fbx", check_existing=False, 
+    use_selection=True,mesh_smooth_type='FACE',axis_forward='X',axis_up='Z',bake_anim=False)
+    bpy.ops.object.delete()
+    obj.select_set(False)
+    for obj_child in obj.children:
+        obj_child.select_set(False)
+    print(obj.name)
+    
 def createNewObjectNode(obj , mesh=''):
     node = {'x' : 0 if mesh == '' else obj.location.x ,
             'y' : 0 if mesh == '' else obj.location.y ,
@@ -38,6 +56,23 @@ def createNewObjectNode(obj , mesh=''):
             'ry' : 0 if mesh == '' else obj.rotation_euler.y,
             'rz' : 0 if mesh == '' else obj.rotation_euler.z,
             'mesh' : obj.name.replace('.',"_") if mesh == '' else mesh.replace('.',"_")}
+    name = obj.name
+    name = name.replace('.',"_")
+    return (node, name)
+
+def createNewLightNode(obj):
+    node = {'x' : obj.location.x ,
+            'y' : obj.location.y ,
+            'z' : obj.location.z ,
+            'rx' : obj.rotation_euler.x,
+            'ry' : obj.rotation_euler.y,
+            'rz' : obj.rotation_euler.z,
+            'scale x' : obj.scale.x,
+            'scale y' : obj.scale.y,
+            'scale z' : obj.scale.z,
+            'type' : obj.data.type,
+            'power' : obj.data.node_tree.nodes["Emission"].inputs["Strength"].default_value,
+            'mesh' : obj.name.replace('.',"_")}
     name = obj.name
     name = name.replace('.',"_")
     return (node, name)
@@ -60,14 +95,28 @@ def exportObjects():
         collection_dict[child.name] = {}
         exportObjectsInCollection(child,"/",collection_dict[child.name],root_visible.children)
     createYamlList(collection_dict)
-
+    
 def exportObjectsInCollection(collection,collection_path,objects_dict,visible):
     local_collection_path = collection_path + collection.name + "/"
     createFolderForExtensions(mesh_root_path, local_collection_path)
-    if collection.name == "furnitures":
+    if collection.name == "furnitures" :
         for child in collection.children:
             objects_dict[child.name] = {}
             exportObjectsInFurnitures(child,local_collection_path,objects_dict[child.name],visible[collection.name].children)
+    elif collection.name =='env':
+        if visible[collection.name].is_visible:
+            for obj in collection.objects:
+                if not obj.parent :
+                    if not obj.animation_data:
+                        obj_node, obj_name = createNewLightNode(obj)
+                        objects_dict[obj_name] = obj_node
+                    else:
+                        obj_node, obj_name = createNewLightNode(obj)
+                        objects_dict[obj_name] = obj_node
+
+            for child in collection.children:
+                objects_dict[child.name] = {}
+                exportObjectsInCollection(child,local_collection_path,objects_dict[child.name],visible[collection.name].children)
     elif collection.name =="appartement":
         if visible[collection.name].is_visible:
             for obj in collection.objects:
@@ -77,8 +126,8 @@ def exportObjectsInCollection(collection,collection_path,objects_dict,visible):
                         obj_node, obj_name = createNewObjectNode(obj,obj.name)
                         objects_dict[obj_name] = obj_node
                     else:
-                        exportOneObject(obj, mesh_root_path, local_collection_path)  
-                        obj_node, obj_name = createNewObjectNode(obj)
+                        exportFromOriginAnim(obj,mesh_root_path,local_collection_path) 
+                        obj_node, obj_name = createNewObjectNode(obj,obj.name)
                         objects_dict[obj_name] = obj_node
 
             for child in collection.children:
@@ -94,7 +143,28 @@ def exportObjectsInCollection(collection,collection_path,objects_dict,visible):
             for child in collection.children:
                 objects_dict[child.name] = {}
                 exportObjectsInCollection(child,local_collection_path,objects_dict[child.name],visible[collection.name].children)
+
                 
+def exportFromOriginAnim(obj,mesh_root_path,collection_path):
+    x=obj.location.x
+    y=obj.location.y
+    z=obj.location.z
+    rx=obj.rotation_euler.x
+    ry=obj.rotation_euler.y
+    rz=obj.rotation_euler.z
+    obj.location.x=0
+    obj.location.y=0
+    obj.location.z=0
+    obj.rotation_euler.x=0
+    obj.rotation_euler.y=0
+    obj.rotation_euler.z=0
+    exportOneObjectAnim(obj, mesh_root_path, collection_path)
+    obj.location.x=x
+    obj.location.y=y
+    obj.location.z=z
+    obj.rotation_euler.x=rx
+    obj.rotation_euler.y=ry
+    obj.rotation_euler.z=rz
    
 def exportFromOrigin(obj,mesh_root_path,collection_path):
     x=obj.location.x
@@ -109,8 +179,6 @@ def exportFromOrigin(obj,mesh_root_path,collection_path):
     obj.rotation_euler.x=0
     obj.rotation_euler.y=0
     obj.rotation_euler.z=0
-    print(obj)
-    print(obj.location.x)
     exportOneObject(obj, mesh_root_path, collection_path)
     obj.location.x=x
     obj.location.y=y
@@ -118,8 +186,6 @@ def exportFromOrigin(obj,mesh_root_path,collection_path):
     obj.rotation_euler.x=rx
     obj.rotation_euler.y=ry
     obj.rotation_euler.z=rz
-    print(obj)
-    print(obj.location.x)
 
 def exportObjectsInFurnitures(collection,collection_path,objects_dict,visible):
     local_collection_path = collection_path + collection.name + "/"
