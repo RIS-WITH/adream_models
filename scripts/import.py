@@ -53,15 +53,68 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 		elif "furnitures" in path_actor_level:
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] + '.' + dic_actor['mesh']) 
 			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi) ))
+			print(path_actor_level)
+			print('____________________')
+			print(actual_dic)
+			print('_____________')
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)
 			actor.root_component.set_editor_property('relative_scale3d' , (dic_actor['scale x'] , dic_actor['scale y'] , dic_actor['scale z']))
 		else:
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] + '.' + dic_actor['mesh']) 
 			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi) ))
+			print(path_actor_level)
+			print('____________________')
+			print(actual_dic)
+			print('_____________')
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)	
+
+
+	elif 'right_door' in dic_actor :
+		actor=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.EditorAssetLibrary.load_blueprint_class('/Game/adream/blueprint/DoubleDoorOpenBP_Skylight.DoubleDoorOpenBP_Skylight') , 
+		(dic_actor['right_door']['x']*100 , dic_actor['right_door']['y']*(-100) , dic_actor['right_door']['z']*100) , (dic_actor['right_door']['ry']*(-180/math.pi) , dic_actor['right_door']['rz']*(-180/math.pi) , dic_actor['right_door']['rx']*(-180/math.pi) ))								
+		actor.set_folder_path(path_actor_level)
+		actor.set_actor_label(actual_dic)
+		list = []
+		i=0
+		while i == 0:
+			i=1
+			all_actors = unreal.EditorLevelLibrary.get_all_level_actors_components()
+			for blueprint_component in all_actors:
+				if actual_dic in str(blueprint_component) and actual_dic+'_' not in str(blueprint_component) and 'StaticMesh' in str(blueprint_component) :
+					print(blueprint_component)
+					print(actual_dic)
+					print(str(blueprint_component).split('PersistentLevel.')[1])
+					check_list=str(blueprint_component).split('PersistentLevel.'+actual_dic+'.')[1]
+					print(check_list)
+					check_list=str(check_list).split("'")[0]
+					print(check_list)
+					if check_list not in list :
+						i=0
+						element_list=str(blueprint_component).split('PersistentLevel.'+actual_dic+'.')[1]
+						element_list=str(element_list).split("'")[0]
+						list.append(element_list)
+						if 'Handle' in str(blueprint_component) and 'handle' in dic_actor:
+						
+							blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset("/Game/adream/models/meshes/furnitures/door/"+dic_actor['handle']['mesh']))			
+						elif 'Lock' in str(blueprint_component) and 'lock' in dic_actor:
+						
+							blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset("/Game/adream/models/meshes/furnitures/door/"+dic_actor['lock']['mesh']))
+						elif 'door_left' in str(blueprint_component) and 'left_door' in dic_actor:
+						
+							blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset("/Game/adream/models/meshes/furnitures/door/"+dic_actor['left_door']['mesh']))
+						elif 'door_right' in str(blueprint_component) and 'right_door' in dic_actor:
+						
+							blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset("/Game/adream/models/meshes/furnitures/door/"+dic_actor['right_door']['mesh']))
+						elif 'Double' in str(blueprint_component) and 'frame' in dic_actor:
+						
+							blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset("/Game/adream/models/meshes/furnitures/door/"+dic_actor['frame']['mesh']))
+			unreal.EditorLevelLibrary.save_all_dirty_levels()
 			
+			
+
+
 	else :
 		for sub_dic in dic_actor :
 			if actual_dic == 'appartement' :
