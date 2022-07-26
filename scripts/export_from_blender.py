@@ -187,6 +187,7 @@ def exportObjectsInCollection(collection , collection_path,objects_dict , visibl
                
                 if 'door' in collection.name:
                     if not '.' in obj.name:
+                        createFolderForExtensions(mesh_root_path, '/furnitures/door/')
                         exportFromOriginDoor(obj , mesh_root_path , '/furnitures/door/')
                     if not obj.parent :
                         l_door = ''

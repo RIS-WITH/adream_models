@@ -1,7 +1,7 @@
 import os
 import unreal
 
-scene_name = 'adream'
+scene_name = 'cam_store'
 path_FBX = "D:/home/nclerc/Documents/FBX"
 
 path_mesh = '/Game/experiments/' + scene_name + '/models/meshes'

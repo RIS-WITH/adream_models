@@ -3,7 +3,7 @@ import unreal
 import yaml
 import math
 
-scene_name = 'adream'
+scene_name = 'cam_store'
 yaml_path = 'D:/home/nclerc/Documents/export1.yaml'
 
 path_blueprint = '/Game/experiments/' + scene_name + '/blueprint'
@@ -44,38 +44,38 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 	if 'mesh' in dic_actor :
 		if actual_dic == "appartement":
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] + '.' + dic_actor['mesh']) 
-			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi)))
+			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(180/math.pi)))
 			actor.set_folder_path('/ground_floor/appartement/appartement_vide')
 			actor.set_actor_label(actual_dic)		
 		elif "env" in path_actor_level:
 			if dic_actor['type']=='AREA':
 				rectlight=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.RectLight , (dic_actor['x']*100 , dic_actor['y']*(-100)
-				, dic_actor['z']*100-60) , (-90 , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi)))
+				, dic_actor['z']*100-60) , (-90 , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(180/math.pi)))
 				rectlight.root_component.set_editor_property('mobility' , unreal.ComponentMobility.STATIC)
 				rectlight.root_component.set_editor_property('intensity' , dic_actor['power'])
 				rectlight.set_folder_path(path_actor_level)
 				rectlight.set_actor_label(actual_dic)
 			elif dic_actor['type']=='POINT':
 				pointlight=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.PointLight,(dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100)
-				, (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi)))
+				, (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(180/math.pi)))
 				pointlight.root_component.set_editor_property('mobility' , unreal.ComponentMobility.STATIC)
 				pointlight.root_component.set_editor_property('intensity' , dic_actor['power'])
 				pointlight.set_folder_path(path_actor_level)
 				pointlight.set_actor_label(path_actor_level)	
 		elif "furnitures" in path_actor_level:
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] + '.' + dic_actor['mesh']) 
-			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi) ))			
+			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(180/math.pi) ))			
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)
 			actor.root_component.set_editor_property('relative_scale3d' , (dic_actor['scale x'] , dic_actor['scale y'] , dic_actor['scale z']))
 		else:
 			actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset(path_mesh + path_to_mesh + '/' + dic_actor['mesh'] + '.' + dic_actor['mesh']) 
-			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(-180/math.pi) ))
+			, (dic_actor['x']*100 , dic_actor['y']*(-100) , dic_actor['z']*100) , (dic_actor['ry']*(-180/math.pi) , dic_actor['rz']*(-180/math.pi) , dic_actor['rx']*(180/math.pi) ))
 			actor.set_folder_path(path_actor_level)
 			actor.set_actor_label(actual_dic)	
 	elif 'right_door' in dic_actor :
-		actor=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.EditorAssetLibrary.load_blueprint_class(path_blueprint + '/BP_door_interactive.BP_door_interactive') , 
-		(dic_actor['right_door']['x']*100 , dic_actor['right_door']['y']*(-100) , dic_actor['right_door']['z']*100) , (dic_actor['right_door']['ry']*(-180/math.pi) , dic_actor['right_door']['rz']*(-180/math.pi) , dic_actor['right_door']['rx']*(-180/math.pi) ))								
+		actor=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.EditorAssetLibrary.load_blueprint_class('/Game/experiments/adream/blueprint/BP_door_interactive.BP_door_interactive') , 
+		(dic_actor['right_door']['x']*100 , dic_actor['right_door']['y']*(-100) , dic_actor['right_door']['z']*100) , (dic_actor['right_door']['ry']*(-180/math.pi) , dic_actor['right_door']['rz']*(-180/math.pi) , dic_actor['right_door']['rx']*(180/math.pi) ))								
 		actor.set_folder_path(path_actor_level)
 		actor.set_actor_label(actual_dic)
 		list = []
@@ -97,11 +97,11 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 							element_list=str(element_list).split("'")[0]
 							list.append(element_list)							
 							if 'Handle' in str(blueprint_component) and 'handle' in dic_actor:
-								blueprint_component.set_editor_property("child_actor_class",unreal.EditorAssetLibrary.load_blueprint_class(path_blueprint + "/BP_handle_movable"))			
+								blueprint_component.set_editor_property("child_actor_class",unreal.EditorAssetLibrary.load_blueprint_class("/Game/experiments/adream/blueprint/BP_handle_movable"))			
 							elif 'Lock' in str(blueprint_component) and 'lock' in dic_actor:
 								blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset(path_mesh + "/furnitures/door/" + dic_actor['lock']['mesh']))
 							elif 'Wrist' in str(blueprint_component) and 'wrist' in dic_actor:
-								blueprint_component.set_editor_property("child_actor_class",unreal.EditorAssetLibrary.load_blueprint_class(path_blueprint + "/BP_handle_nonmovable"))			
+								blueprint_component.set_editor_property("child_actor_class",unreal.EditorAssetLibrary.load_blueprint_class("/Game/experiments/adream/blueprint/BP_handle_nonmovable"))			
 							elif 'door_left' in str(blueprint_component) and 'left_door' in dic_actor:	
 								blueprint_component.set_editor_property("static_mesh",unreal.EditorAssetLibrary.load_asset(path_mesh + "/furnitures/door/" + dic_actor['left_door']['mesh']))
 							elif 'door_right' in str(blueprint_component) and 'right_door' in dic_actor:	
@@ -111,7 +111,7 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 			unreal.EditorLevelLibrary.save_all_dirty_levels()
 	elif 'elevator' == actual_dic:
 		actor=unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.EditorAssetLibrary.load_blueprint_class(path_blueprint + '/elevator.elevator') , 
-		(dic_actor['gf_elevator']['x']*100 , dic_actor['gf_elevator']['y']*(-100) , dic_actor['gf_elevator']['z']*100) , (dic_actor['gf_elevator']['ry']*(-180/math.pi) , dic_actor['gf_elevator']['rz']*(-180/math.pi) , dic_actor['gf_elevator']['rx']*(-180/math.pi) ))								
+		(dic_actor['gf_elevator']['x']*100 , dic_actor['gf_elevator']['y']*(-100) , dic_actor['gf_elevator']['z']*100) , (dic_actor['gf_elevator']['ry']*(-180/math.pi) , dic_actor['gf_elevator']['rz']*(-180/math.pi) , dic_actor['gf_elevator']['rx']*(180/math.pi) ))								
 		actor.set_folder_path(path_actor_level)
 		actor.set_actor_label(actual_dic)
 		list = []
@@ -161,6 +161,8 @@ def createActors(dic_actor , path_actor_level , actual_dic , path_to_mesh) :
 				createActors(dic_actor[sub_dic] , '/ground_floor' + path_actor_level , sub_dic , path_to_mesh)
 			elif ('furnitures' in path_actor_level and ('first_floor' in actual_dic)) :
 				createActors(dic_actor[sub_dic] , '/first_floor' + path_actor_level , sub_dic , path_to_mesh)
+			elif ('furnitures' in path_actor_level and 'mesh'in dic_actor[sub_dic]) :
+				createActors(dic_actor[sub_dic] , path_actor_level , sub_dic , path_to_mesh)
 			else :
 				createActors(dic_actor[sub_dic] , path_actor_level + "/" + actual_dic , sub_dic , path_to_mesh + "/" + actual_dic)
 
