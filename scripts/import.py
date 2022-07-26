@@ -17,7 +17,7 @@ def createWorld() :
 	sub_level_of_world = unreal.EditorLevelUtils.get_levels(world)
 	actor = unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.PlayerStart,(478 , -1564 , 0))
 	if scene_name == 'adream':
-		actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset('/Game/expe/adream/hdri/Hdri_world.Hdri_world') , (0 , 0 , -50) , (0 , 0 , 0))	
+		actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset('/Game/experiments/adream/hdri/Hdri_world.Hdri_world') , (0 , 0 , -50) , (0 , 0 , 0))	
 	actor = unreal.EditorLevelLibrary.spawn_actor_from_object(unreal.EditorAssetLibrary.load_asset('/Game/VRTemplate/Blueprints/FirstPersonCharacter.FirstPersonCharacter') , (478 , -1564 , 90))		
 	actor= unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.LightmassImportanceVolume,(-1001 , -1152 , 388))
 	actor.set_actor_relative_scale3d((30 , 32 , 10))
