@@ -34,7 +34,7 @@ def exportOneObject(obj, export_path_before , export_path_after):
     for obj_child in obj.children:
         obj_child.select_set(False)
 
-def exportOneObjectDoor(obj, export_path_before , export_path_after):
+def exportOneObjectDoor(obj , export_path_before , export_path_after):
     obj.select_set(True)
     if obj.animation_data :
         bpy.ops.object.duplicate()
@@ -56,12 +56,12 @@ def createNewObjectNode(obj , mesh = ''):
             'rx' : 0 if mesh == '' else obj.rotation_euler.x ,
             'ry' : 0 if mesh == '' else obj.rotation_euler.y ,
             'rz' : 0 if mesh == '' else obj.rotation_euler.z ,
-            'mesh' : obj.name.replace('.',"_") if mesh == '' else mesh.replace('.',"_")}
+            'mesh' : obj.name.replace('.' , "_") if mesh == '' else mesh.replace('.' , "_")}
     name = obj.name
     name = name.replace('.',"_")
-    return (node, name)
+    return (node , name)
 
-def createNewDoorNode(obj,l_door,lock,handle,frame ):
+def createNewDoorNode(obj , l_door , lock , handle , frame , wrist ):
     rnode={'x' : obj.location.x ,
             'y' : obj.location.y ,
             'z' : obj.location.z ,
@@ -83,6 +83,13 @@ def createNewDoorNode(obj,l_door,lock,handle,frame ):
             'ry' :0 if lock == '' else  lock.rotation_euler.y ,
             'rz' :0 if lock == '' else  lock.rotation_euler.z ,
             'mesh' :0 if lock == '' else  lock.name.split('.', 1)[0]}
+    wristnode={'x' : 0 if wrist == '' else wrist.location.x ,
+            'y' : 0 if wrist == '' else wrist.location.y ,
+            'z' : 0 if wrist == '' else wrist.location.z ,
+            'rx' : 0 if wrist == '' else wrist.rotation_euler.x ,
+            'ry' :0 if wrist == '' else  wrist.rotation_euler.y ,
+            'rz' :0 if wrist == '' else  wrist.rotation_euler.z ,
+            'mesh' :0 if wrist == '' else  wrist.name.split('.', 1)[0]}
     handlenode={'x' :0 if handle == '' else handle.location.x ,
             'y' : 0 if handle == '' else handle.location.y ,
             'z' : 0 if handle == '' else handle.location.z ,
@@ -100,17 +107,18 @@ def createNewDoorNode(obj,l_door,lock,handle,frame ):
 
     node = {'right_door' : rnode}
     if(l_door != '') :
-        node['left_door']=lnode
+        node['left_door'] = lnode
     if(handle != ''):
-        node['handle']=handlenode
+        node['handle'] = handlenode
     if(lock != '') :
-        node['lock']=locknode
+        node['lock'] = locknode
     if(frame != ''):
-        node['frame']=framenode
-    
+        node['frame'] = framenode
+    if(wrist != ''):
+        node['wrist'] = wristnode
     name = obj.name
     name = name.replace('.',"_")
-    return (node, name)
+    return(node , name)
 
 
 def createNewLightNode(obj):
@@ -147,21 +155,21 @@ def createNewFurnituresNode(obj , mesh):
   
 def createYamlList(collection_dict):
     yaml_string = yaml.dump(collection_dict)
-    with open(mesh_root_path+"export1.yaml",'w') as outfile :
+    with open(mesh_root_path+"export1.yaml" , 'w') as outfile :
         outfile.write(yaml_string)
 
 def exportObjects():
-    createFolderForExtensions(mesh_root_path, "/")
+    createFolderForExtensions(mesh_root_path , "/")
     collection_dict = {}
     collection_dict["objects"] = {} 
     for obj in root.objects:
-        exportOneObject(obj, mesh_root_path, "/")
-        obj_node, obj_name = createNewObjectNode(obj)
+        exportOneObject(obj , mesh_root_path , "/")
+        obj_node , obj_name = createNewObjectNode(obj)
         collection_dict["objects"][obj_name] = obj_node
         
     for child in root.children:
         collection_dict[child.name] = {}
-        exportObjectsInCollection(child,"/",collection_dict[child.name],root_visible.children)
+        exportObjectsInCollection(child , "/" , collection_dict[child.name] , root_visible.children)
     createYamlList(collection_dict)
 
 
@@ -173,32 +181,36 @@ def exportObjectsInCollection(collection , collection_path,objects_dict , visibl
         if collection.name == "furnitures" :
             for child in collection.children:
                 objects_dict[child.name] = {}
-                exportObjectsInFurnitures(child,local_collection_path,objects_dict[child.name],visible[collection.name].children)
+                exportObjectsInFurnitures(child , local_collection_path , objects_dict[child.name] , visible[collection.name].children)
         else:
             for obj in collection.objects:
+               
                 if 'door' in collection.name:
                     if not '.' in obj.name:
-                        exportFromOriginDoor(obj, mesh_root_path , '/furnitures/door/')
+                        exportFromOriginDoor(obj , mesh_root_path , '/furnitures/door/')
                     if not obj.parent :
-                        l_door=''
-                        lock=''
-                        handle=''
-                        frame=''
+                        l_door = ''
+                        lock = ''
+                        handle = ''
+                        frame = ''
+                        wrist = ''
                         for sub_mesh in obj.children :
                             if 'half' in sub_mesh.name or 'left' in sub_mesh.name:
-                                l_door=sub_mesh
-                            elif 'lock' in sub_mesh.name or 'wrist' in sub_mesh.name :
-                                lock=sub_mesh
+                                l_door = sub_mesh
+                            elif 'wrist' in sub_mesh.name :
+                                wrist = sub_mesh
+                            elif 'lock' in sub_mesh.name:
+                                lock = sub_mesh
                             elif 'handle' in sub_mesh.name :
-                                handle=sub_mesh
+                                handle = sub_mesh
                             elif 'frame' in sub_mesh.name:
-                                frame=sub_mesh
-                        obj_node , obj_name = createNewDoorNode(obj,l_door,lock,handle,frame)
+                                frame = sub_mesh
+                        obj_node , obj_name = createNewDoorNode(obj , l_door , lock , handle , frame , wrist)
                         objects_dict[obj_name] = obj_node
                 elif not obj.parent :
                     if collection.name == 'env':
                         obj_node, obj_name = createNewLightNode(obj)
-                    elif collection.name == 'appartement':
+                    elif collection.name == 'appartement' or collection.name == 'elevator':
                         exportFromOrigin(obj , mesh_root_path , local_collection_path)  
                         obj_node , obj_name = createNewObjectNode(obj,obj.name)
                     else :
@@ -233,9 +245,10 @@ def exportFromOrigin(obj , mesh_root_path , collection_path):
 
 
 def exportFromOriginDoor(obj , mesh_root_path , collection_path):
-    
+    obj_tmp = obj
     if obj.parent and not 'handle' in obj.name:
-        dad=obj.parent
+        obj_tmp = obj.parent
+        dad = obj.parent
         x = dad.location.x
         y = dad.location.y
         z = dad.location.z

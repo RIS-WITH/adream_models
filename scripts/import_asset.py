@@ -1,11 +1,14 @@
 import os
 import unreal
 
-path_mesh = '/Game/adream/models/meshes'
-path_material='/Game/adream/models/material'
-path_level='/Game/adream/maps/'
+scene_name = 'adream'
+path_FBX = "D:/home/nclerc/Documents/FBX"
 
-separate_asset_classes = ["Material","Texture2D","Texture3D"]
+path_mesh = '/Game/experiments/' + scene_name + '/models/meshes'
+path_material='/Game/experiments/' + scene_name + '/models/material'
+
+
+separate_asset_classes = ["Material","Texture2D","Texture3D","Texture"]
 
 def importTree(fbx_path, path_end):
 	list = os.listdir(fbx_path + path_end)
@@ -21,12 +24,11 @@ def buildStaticMeshImportOptions():
 	options = unreal.FbxImportUI()
 
 	options.set_editor_property('import_mesh', True)
-	options.set_editor_property('import_textures', False)
+	options.set_editor_property('import_textures', True)
 	options.set_editor_property('import_materials', True)
 	options.set_editor_property('import_as_skeletal', False)
 	options.set_editor_property('import_animations', False)
 	options.set_editor_property('automated_import_should_detect_type', False)
-	
 	options.set_editor_property('create_physics_asset',True)
 
 	options.static_mesh_import_data.set_editor_property('import_uniform_scale', 1.0)	
@@ -73,12 +75,10 @@ def separateMaterialFromMesh():
 	for asset_path in list_assets_path:
 		asset=unreal.EditorAssetLibrary.find_asset_data(asset_path)
 		if asset.asset_class in separate_asset_classes:
-			print(path_material + "/" + str(asset.asset_name))
 			if unreal.EditorAssetLibrary.does_asset_exist(path_material + "/" + str(asset.asset_name)):
 				old_reference_texture=unreal.EditorAssetLibrary.find_asset_data(asset_path).get_asset()
 				new_reference_texture=unreal.EditorAssetLibrary.find_asset_data(path_material + "/" + str(asset.asset_name)).get_asset()
 				unreal.EditorAssetLibrary.consolidate_assets(new_reference_texture,[old_reference_texture])
-				unreal.EditorAssetLibrary.delete_asset(asset_path)
 			else:
 				unreal.EditorAssetLibrary.rename_asset(asset_path,path_material + "/" + str(asset.asset_name))
 
@@ -89,6 +89,6 @@ def importAssets(fbx_path):
 	separateMaterialFromMesh()
 
 if __name__=="__main__":
-	importAssets("/home/nclerc/Documents/FBX")
+	importAssets(path_FBX)
 
 
