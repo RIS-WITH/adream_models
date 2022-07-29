@@ -4,7 +4,7 @@ import os
 import copy
 #### Argument 
 mesh_root_path = "/home/nclerc/Documents/"
-root = bpy.data.scenes["Adream"].collection
+root = bpy.data.scenes["Scene"].collection
 root_visible = bpy.context.view_layer.layer_collection
 #### script
  
@@ -178,7 +178,7 @@ def exportObjectsInCollection(collection , collection_path,objects_dict , visibl
     local_collection_path = collection_path + collection.name + "/"
     createFolderForExtensions(mesh_root_path , local_collection_path)
     if visible[collection.name].is_visible :
-        if collection.name == "furnitures" :
+        if collection.name == "furnitures" or collection.name == "grapable" :
             for child in collection.children:
                 objects_dict[child.name] = {}
                 exportObjectsInFurnitures(child , local_collection_path , objects_dict[child.name] , visible[collection.name].children)
@@ -187,6 +187,7 @@ def exportObjectsInCollection(collection , collection_path,objects_dict , visibl
                
                 if 'door' in collection.name:
                     if not '.' in obj.name:
+                        createFolderForExtensions(mesh_root_path, '/furnitures/')
                         createFolderForExtensions(mesh_root_path, '/furnitures/door/')
                         exportFromOriginDoor(obj , mesh_root_path , '/furnitures/door/')
                     if not obj.parent :
@@ -309,3 +310,4 @@ if __name__=="__main__":
     for ob in bpy.context.selected_objects:
         ob.select_set(False)
     exportObjects()
+    print('export end well')

@@ -1,7 +1,7 @@
 import os
 import unreal
 
-scene_name = 'cam_store'
+scene_name = 'camstore'
 path_FBX = "D:/home/nclerc/Documents/FBX"
 
 path_mesh = '/Game/experiments/' + scene_name + '/models/meshes'
@@ -64,9 +64,13 @@ def importMyAssets(file_name_and_path,destination_path):
 	asset=unreal.EditorAssetLibrary.find_asset_data(destination_path+name_full)
 	if asset.asset_class=='StaticMesh':
 		mesh=asset.get_asset()
-		body = mesh.get_editor_property('body_setup')
-		body.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
-		mesh.set_editor_property('body_setup', body)
+		mesh.set_editor_property('light_map_coordinate_index',1)
+		mesh.set_editor_property('light_map_resolution',512)
+		if not "grapable" in destination_path :
+			body = mesh.get_editor_property('body_setup')
+			body.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+			mesh.set_editor_property('body_setup', body)
+		
 
 
 def separateMaterialFromMesh():	
